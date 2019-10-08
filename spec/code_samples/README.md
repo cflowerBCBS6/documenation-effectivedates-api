@@ -7,3 +7,4 @@ Path `<lang>/<path>/<HTTP verb>.<extension>` where:
   * `<path>` - path of the target method, where all `/` are replaced with `@`.
   * `<HTTP verb>` - verb of target method.
   * `<extension>` - ignored.
+
