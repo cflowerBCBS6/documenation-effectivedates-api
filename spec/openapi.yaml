@@ -43,18 +43,20 @@ externalDocs:
 # A list of tags used by the specification with additional metadata.
 # The order of the tags can be used to reflect on their order by the parsing tools.
 tags:
+  - name: Effective Date
+    description: Example effective date response
   - name: Echo
     description: Example echo operations
   - name: User
     description: Operations about user
 servers:
-  - url: 'http://example.com/api/v1'
+  - url: 'http://localhost:4200/api/v1'
   - url: 'https://example.com/api/v1'
 
 # Holds the relative paths to the individual endpoints. The path is appended to the
 # basePath in order to construct the full URL. 
 paths:
-  '/users/{username}': # path parameter in curly braces
+  '/u65/ged{eventDate}': # path parameter in curly braces
 
     # parameters list that are used with each operation for this path
     parameters:
@@ -76,21 +78,16 @@ paths:
         You can use `markdown` here.
 
       # operationId should be unique across the whole specification
-      operationId: getUserByName
+      operationId: getEDByDate
 
       # list of parameters for the operation
       parameters:
-        - name: username
+        - name: eventDate
           in: path
-          description: The name that needs to be fetched
+          description: Event date used to get effective date
           required: true
           schema:
             type: string
-        - name: with_email
-          in: query
-          description: Filter users without email
-          schema:
-            type: boolean
 
       # security schemas applied to this operation
       security:
@@ -103,49 +100,14 @@ paths:
           content:
             application/json: # operation response mime type
               schema: # response schema can be specified for each response
-                $ref: '#/components/schemas/User'
-              example: # response example
-                username: user1
-                email: user@example.com
+                $ref: '#/components/schemas/EDO'
+              example: # '2019-08-09'
+                eventDate: 2019-10-04
         '403':
           description: Forbidden
         '404':
           description: User not found
-    # documentation for PUT operation for this path
-    put:
-      tags:
-        - User
-      summary: Updated user
-      description: This can only be done by the logged in user.
-      operationId: updateUser
-      parameters:
-        - name: username
-          in: path
-          description: The name that needs to be updated
-          required: true
-          schema:
-            type: string
-      security:
-        - main_auth:
-            - 'write:users'
-      responses:
-        '200':
-          description: OK
-        '400':
-          description: Invalid user supplied
-        '404':
-          description: User not found
-      # request body documentation
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/User'
-          application/xml:
-            schema:
-              $ref: '#/components/schemas/User'
-        description: Updated user object
-        required: true
+
   /echo: # path parameter in curly braces
     post: # documentation for POST operation for this path
       tags:
@@ -197,31 +159,20 @@ paths:
 # An object to hold reusable parts that can be used across the spec
 components:
   schemas:
-    Email:
+    Dates:
       description: User email address
-      type: string
+      type: array
       format: test
-      example: john.smith@example.com
-    User:
+      example: [2019-01-01, 2019-02-01]
+    EDO:
       type: object
       properties:
-        username:
+        date:
           description: User supplied username
           type: string
-          minLength: 4
-          example: John78
-        firstName:
-          description: User first name
-          type: string
-          minLength: 1
-          example: John
-        lastName:
-          description: User last name
-          type: string
-          minLength: 1
-          example: Smith
-        email:
-          $ref: '#/components/schemas/Email'
+          example: 2019-01-01
+        dates:
+          $ref: '#/components/schemas/Dates'
   headers:
     ExpiresAfter:
       description: date in UTC when token expires
