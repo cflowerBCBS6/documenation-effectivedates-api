@@ -26,7 +26,7 @@ servers:
 # Holds the relative paths to the individual endpoints. The path is appended to the
 # basePath in order to construct the full URL.
 paths:
-  '/u65/ged/{EventDate}': # path parameter in curly braces
+  '/u65/ged/{eventDate}': # path parameter in curly braces
 
     # parameters list that are used with each operation for this path
     parameters:
@@ -34,7 +34,7 @@ paths:
         in: query
         description: General effective date response
         schema:
-          type: LocalDate
+          type: string
     get: # documentation for GET operation for this path
       tags:
         - EDO
@@ -52,7 +52,7 @@ paths:
 
       # list of parameters for the operation
       parameters:
-        - name: date
+        - name: eventDate
           in: path
           description: The event date that needs effective dates for
           required: true
@@ -92,7 +92,3 @@ components:
       schema:
         type: string
         format: date-time
-
-    basic_auth: # security definition name (you can name it as you want)
-      type: http
-      scheme: basic
