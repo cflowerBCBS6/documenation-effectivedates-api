@@ -65,7 +65,7 @@ paths:
             application/json: # operation response mime type
               schema: # response schema can be specified for each response
                 $ref: '#/components/schemas/EDO'
-              example: '2019-08-06', []
+              example: '2019-08-06'
                 date: '2019-07-06'
         '403':
           description: Forbidden
