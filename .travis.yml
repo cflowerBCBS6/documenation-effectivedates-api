@@ -4,6 +4,7 @@ node_js:
 deploy:
   - skip_cleanup: true
     provider: script
+    github_token: $GITHUB_TOKEN
     script: npm run build && npm run gh-pages
     on:
       branch: master
