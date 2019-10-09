@@ -1,945 +1,899 @@
 openapi: 3.0.0
-servers:
-  - url: //petstore.swagger.io/v2
-    description: Default server
-  - url: //petstore.swagger.io/sandbox
-    description: Sandbox server
 info:
-  description: |
-    This is a sample server Petstore server.
-    You can find out more about Swagger at
-    [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #swagger](http://swagger.io/irc/).
-    For this sample, you can use the api key `special-key` to test the authorization filters.
+  version: '1.0'
+  title: Webhook Relay
+  description: >
     # Introduction
-    This API is documented in **OpenAPI format** and is based on
-    [Petstore sample](http://petstore.swagger.io/) provided by [swagger.io](http://swagger.io) team.
-    It was **extended** to illustrate features of [generator-openapi-repo](https://github.com/Rebilly/generator-openapi-repo)
-    tool and [ReDoc](https://github.com/Redocly/redoc) documentation. In addition to standard
-    OpenAPI syntax we use a few [vendor extensions](https://github.com/Redocly/redoc/blob/master/docs/redoc-vendor-extensions.md).
-    # OpenAPI Specification
-    This API is documented in **OpenAPI format** and is based on
-    [Petstore sample](http://petstore.swagger.io/) provided by [swagger.io](http://swagger.io) team.
-    It was **extended** to illustrate features of [generator-openapi-repo](https://github.com/Rebilly/generator-openapi-repo)
-    tool and [ReDoc](https://github.com/Redocly/redoc) documentation. In addition to standard
-    OpenAPI syntax we use a few [vendor extensions](https://github.com/Redocly/redoc/blob/master/docs/redoc-vendor-extensions.md).
-    # Cross-Origin Resource Sharing
-    This API features Cross-Origin Resource Sharing (CORS) implemented in compliance with  [W3C spec](https://www.w3.org/TR/cors/).
-    And that allows cross-domain communication from the browser.
-    All responses have a wildcard same-origin which makes them completely public and accessible to everyone, including any code on any site.
-    # Authentication
-    Petstore offers two forms of authentication:
-      - API Key
-      - OAuth2
-    OAuth2 - an open protocol to allow secure authorization in a simple
-    and standard method from web, mobile and desktop applications.
-    <SecurityDefinitions />
-  version: 1.0.0
-  title: Swagger Petstore
-  termsOfService: 'http://swagger.io/terms/'
+    Fast, secure tunnels to your internal networks. [Webhook
+    Relay](https://webhookrelay.com) allows you to expose your localhost
+    or any other server in private network to the public internet without
+    configuring port forwarding
+    or firewalls.
+    This API is documented in **Swagger format**. Webhook Relay allows to
+    dynamically configure your tunnels and webhook forwarding.
+
+    # Available authentication methods
+    Webhook Relay offers three forms of authentication:
+      - **Basic Auth** - only available for non-OAuth accounts. Use your username and password.
+      - **API Key** - available for all accounts, token pairs can be generated [here](https://my.webhookrelay.com/tokens)
+      - **JWT** - mainly used by the [admin dashboard](https://my.webhookrelay.com) with a 'Authorization Bearer: token'
+  termsOfService: 'https://webhookrelay.com/tos/'
   contact:
-    name: API Support
-    email: apiteam@swagger.io
-    url: https://github.com/Redocly/redoc
-  x-logo:
-    url: 'https://redocly.github.io/redoc/petstore-logo.png'
-    altText: Petstore logo
-  license:
-    name: Apache 2.0
-    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+    email: support@webhookrelay.com
 externalDocs:
-  description: Find out how to create Github repo for your OpenAPI spec.
-  url: 'https://github.com/Rebilly/generator-openapi-repo'
+  description: Find out more in the official documentation.
+  url: 'https://webhookrelay.com/v1/guide/'
 tags:
-  - name: pet
-    description: Everything about your Pets
-  - name: store
-    description: Access to Petstore orders
-  - name: user
-    description: Operations about user
-  - name: pet_model
-    x-displayName: The Pet Model
-    description: |
-      <SchemaDefinition schemaRef="#/components/schemas/Pet" />
-  - name: store_model
-    x-displayName: The Order Model
-    description: |
-      <SchemaDefinition schemaRef="#/components/schemas/Order" exampleRef="#/components/examples/Order" showReadOnly={true} showWriteOnly={true} />
+  - name: Tokens
+    description: >-
+      Token key & secret pairs are used to authenticate your API calls or for
+      agents to subscribe to webhook forwarding or open tunnels.
+  - name: Buckets
+    description: >-
+      Input and output grouping. Bucket allows to have multiple endpoints for
+      the same destination or multiple destinations for fan-out style webhook
+      forwarding.
+  - name: Outputs
+    description: >-
+      Outputs are destinations, where your webhooks will be forwarded. Public
+      destinations do not require agents to be running. Internal outputs will
+      not work without an agent.
+  - name: Inputs
+    description: >-
+      Inputs are your public endpoints. Each input serves as an inbox that you
+      can supply to your webhooks producer (ie: Github, Docker, IFTTT)
+  - name: Tunnels
+    description: >
+      Tunnels allow remote access to internal web services such as local
+      Wordpress, Jekyll or Hexo. Recommended `crypto` options are `flexible` or
+      `tls-pass-through`.
+
 x-tagGroups:
-  - name: General
+  - name: Authentication
     tags:
-      - pet
-      - store
-  - name: User Management
+      - Tokens
+  - name: Webhook Forwarding
     tags:
-      - user
-  - name: Models
+      - Buckets
+      - Outputs
+      - Inputs
+  - name: Tunneling
     tags:
-      - pet_model
-      - store_model
+      - Tunnels
 paths:
-  /pet:
+  /v1/tunnels:
+    get:
+      tags:
+        - Tunnels
+      summary: List All Tunnels
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tunnel'
+              examples:
+                response:
+                  value:
+                    - id: b3237483-e96e-4f3a-905c-0d9603d66c1f
+                      created_at: 1534409264
+                      updated_at: 1534409264
+                      name: tunnel-x
+                      destination: 'http://localhost:4000'
+                      host: tunnelx.webrelay.io
+    post:
+      tags:
+        - Tunnels
+      description: >-
+        You may create your own tunnel using this action. It takes a JSON object
+        containing a tunnel request with a specified destination. Paid plans
+        have an option to specify either encryption, subdomain or full domain.
+      summary: Create a New Tunnel
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tunnel'
+              examples:
+                response:
+                  value:
+                    id: b3237483-e96e-4f3a-905c-0d9603d66c1f
+                    created_at: 1534409264
+                    updated_at: 1534409264
+                    name: tunnel-x
+                    destination: 'http://localhost:4000'
+                    host: tunnelx.webrelay.io
+            description:
+              examples:
+                response:
+                  value: Create a tunnel with a custom subdomain
+        '400':
+          description: Invalid tunnel request supplied
+      requestBody:
+        $ref: '#/components/requestBodies/TunnelCreateRequest'
+    summary: List and create tunnels
+  '/v1/tunnels/{tunnelID}/':
     parameters:
-      - name: cookieParam
-        in: cookie
-        description: Some cookie
+      - name: tunnelID
+        in: path
+        description: ID of tunnel to return
         required: true
         schema:
-          type: integer
-          format: int64
-    post:
+          type: string
+    get:
       tags:
-        - pet
-      summary: Add a new pet to the store
-      description: Add new pet to the store inventory.
-      operationId: addPet
+        - Tunnels
+      summary: Get Tunnel Details
       responses:
-        '405':
-          description: Invalid input
-      security:
-        - petstore_auth:
-            - 'write:pets'
-            - 'read:pets'
-      x-code-samples:
-        - lang: 'C#'
-          source: |
-            PetStore.v1.Pet pet = new PetStore.v1.Pet();
-            pet.setApiKey("your api key");
-            pet.petType = PetStore.v1.Pet.TYPE_DOG;
-            pet.name = "Rex";
-            // set other fields
-            PetStoreResponse response = pet.create();
-            if (response.statusCode == HttpStatusCode.Created)
-            {
-              // Successfully created
-            }
-            else
-            {
-              // Something wrong -- check response for errors
-              Console.WriteLine(response.getRawResponse());
-            }
-        - lang: PHP
-          source: |
-            $form = new \PetStore\Entities\Pet();
-            $form->setPetType("Dog");
-            $form->setName("Rex");
-            // set other fields
-            try {
-                $pet = $client->pets()->create($form);
-            } catch (UnprocessableEntityException $e) {
-                var_dump($e->getErrors());
-            }
-      requestBody:
-        $ref: '#/components/requestBodies/Pet'
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tunnel'
+              examples:
+                response:
+                  value:
+                    created_at: 1534409264
+                    updated_at: 1534409264
+                    id: b3237483-e96e-4f3a-905c-0d9603d66c1f
+                    destination: 'http://localhost:8090'
+                    name: tunnel
+                    group: ''
+                    addr: ''
+                    host: tunnelx.webrelay.io
+                    mode: active
+                    protocol: http
+                    account_id: bd7e1dfc-54c8-408c-a885-7498bf1d8522
+                    description: ''
+                    features: null
+                    auth:
+                      created_at: 1534409264
+                      updated_at: 1534409264
+                      id: eb3fbc49-0713-48b1-8971-a7c4a9c64dfb
+                      type: none
+                    agent_id: ''
+                    ingress_rules: null
+                    crypto: 'off'
+        '404':
+          description: Tunnel not found
     put:
       tags:
-        - pet
-      summary: Update an existing pet
-      description: ''
-      operationId: updatePet
-      responses:
-        '400':
-          description: Invalid ID supplied
-        '404':
-          description: Pet not found
-        '405':
-          description: Validation exception
-      security:
-        - petstore_auth:
-            - 'write:pets'
-            - 'read:pets'
-      x-code-samples:
-        - lang: PHP
-          source: |
-            $form = new \PetStore\Entities\Pet();
-            $form->setPetId(1);
-            $form->setPetType("Dog");
-            $form->setName("Rex");
-            // set other fields
-            try {
-                $pet = $client->pets()->update($form);
-            } catch (UnprocessableEntityException $e) {
-                var_dump($e->getErrors());
-            }
-      requestBody:
-        $ref: '#/components/requestBodies/Pet'
-  '/pet/{petId}':
-    get:
-      tags:
-        - pet
-      summary: Find pet by ID
-      description: Returns a single pet
-      operationId: getPetById
-      parameters:
-        - name: petId
-          in: path
-          description: ID of pet to return
-          required: true
-          deprecated: true
-          schema:
-            type: integer
-            format: int64
+        - Tunnels
+      summary: Update Tunnel Details
       responses:
         '200':
-          description: successful operation
+          description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Pet'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/Pet'
+                $ref: '#/components/schemas/Tunnel'
+              examples:
+                response:
+                  value:
+                    created_at: 1534409264
+                    updated_at: 1534409264
+                    id: b3237483-e96e-4f3a-905c-0d9603d66c1f
+                    destination: 'http://localhost:8090'
+                    name: tunnel
+                    group: ''
+                    addr: ''
+                    host: tunnelx.webrelay.io
+                    mode: active
+                    protocol: http
+                    account_id: bd7e1dfc-54c8-408c-a885-7498bf1d8522
+                    description: ''
+                    features: null
+                    auth:
+                      created_at: 1534409264
+                      updated_at: 1534409264
+                      id: eb3fbc49-0713-48b1-8971-a7c4a9c64dfb
+                      type: none
+                    agent_id: ''
+                    ingress_rules: null
+                    crypto: 'off'
         '400':
-          description: Invalid ID supplied
+          description: Bad request (check response message)
         '404':
-          description: Pet not found
-      security:
-        - api_key: []
-    post:
-      tags:
-        - pet
-      summary: Updates a pet in the store with form data
-      description: ''
-      operationId: updatePetWithForm
-      parameters:
-        - name: petId
-          in: path
-          description: ID of pet that needs to be updated
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        '405':
-          description: Invalid input
-      security:
-        - petstore_auth:
-            - 'write:pets'
-            - 'read:pets'
+          description: Tunnel not found
       requestBody:
-        content:
-          application/x-www-form-urlencoded:
-            schema:
-              type: object
-              properties:
-                name:
-                  description: Updated name of the pet
-                  type: string
-                status:
-                  description: Updated status of the pet
-                  type: string
+        $ref: '#/components/requestBodies/TunnelCreateRequest'
     delete:
       tags:
-        - pet
-      summary: Deletes a pet
-      description: ''
-      operationId: deletePet
-      parameters:
-        - name: api_key
-          in: header
-          required: false
-          schema:
-            type: string
-          example: "Bearer <TOKEN>"
-        - name: petId
-          in: path
-          description: Pet id to delete
-          required: true
-          schema:
-            type: integer
-            format: int64
+        - Tunnels
+      summary: Delete Tunnel
       responses:
-        '400':
-          description: Invalid pet value
-      security:
-        - petstore_auth:
-            - 'write:pets'
-            - 'read:pets'
-  '/pet/{petId}/uploadImage':
+        '200':
+          description: Successful Response
+        '404':
+          description: Tunnel not found
+    summary: 'Get, update and delete tunnels'
+  /v1/tokens:
+    get:
+      tags:
+        - Tokens
+      summary: List All Authentication Tokens
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Token'
+              examples:
+                response:
+                  value:
+                    - created_at: 1535232797
+                      updated_at: 1540394529
+                      last_login: 3 days ago
+                      id: 0a8dd8b4-aaaa-rrrr-dddd-ccc860e3005a
+                      description: linux cli
+                      scopes:
+                        buckets: []
+                        tunnels: []
+                      active: true
+                      api_access: enabled
     post:
       tags:
-        - pet
-      summary: uploads an image
-      description: ''
-      operationId: uploadFile
-      parameters:
-        - name: petId
-          in: path
-          description: ID of pet to update
-          required: true
-          schema:
-            type: integer
-            format: int64
+        - Tokens
+      summary: Create a New Authentication Token
       responses:
-        '200':
-          description: successful operation
+        '201':
+          description: Create a new token
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponse'
-      security:
-        - petstore_auth:
-            - 'write:pets'
-            - 'read:pets'
+                $ref: '#/components/schemas/TokenCreateResponse'
+              examples:
+                response:
+                  value:
+                    created_at: 1535365683
+                    updated_at: 1536161359
+                    id: cc58c9ea-5fa7-466e-91dc-5c08d0b1127c
+                    description: ''
+                    scopes:
+                      buckets: []
+                      tunnels:
+                        - foo
+                        - bar
+                        - faa
+                    active: true
+                    api_disabled: true
+        '400':
+          description: Bad Request
       requestBody:
-        content:
-          application/octet-stream:
-            schema:
-              type: string
-              format: binary
-  /pet/findByStatus:
-    get:
-      tags:
-        - pet
-      summary: Finds Pets by status
-      description: Multiple status values can be provided with comma seperated strings
-      operationId: findPetsByStatus
-      parameters:
-        - name: status
-          in: query
-          description: Status values that need to be considered for filter
-          required: true
-          style: form
-          schema:
-            type: array
-            minItems: 1
-            maxItems: 3
-            items:
-              type: string
-              enum:
-                - available
-                - pending
-                - sold
-              default: available
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Pet'
-            application/xml:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Pet'
-        '400':
-          description: Invalid status value
-      security:
-        - petstore_auth:
-            - 'write:pets'
-            - 'read:pets'
-  /pet/findByTags:
-    get:
-      tags:
-        - pet
-      summary: Finds Pets by tags
-      description: >-
-        Muliple tags can be provided with comma seperated strings. Use tag1,
-        tag2, tag3 for testing.
-      operationId: findPetsByTags
-      deprecated: true
-      parameters:
-        - name: tags
-          in: query
-          description: Tags to filter by
-          required: true
-          style: form
-          schema:
-            type: array
-            items:
-              type: string
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Pet'
-            application/xml:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Pet'
-        '400':
-          description: Invalid tag value
-      security:
-        - petstore_auth:
-            - 'write:pets'
-            - 'read:pets'
-  /store/inventory:
-    get:
-      tags:
-        - store
-      summary: Returns pet inventories by status
-      description: Returns a map of status codes to quantities
-      operationId: getInventory
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties:
-                  type: integer
-                  format: int32
-      security:
-        - api_key: []
-  /store/order:
-    post:
-      tags:
-        - store
-      summary: Place an order for a pet
-      description: ''
-      operationId: placeOrder
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Order'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/Order'
-        '400':
-          description: Invalid Order
-          content:
-            application/json:
-              example:
-                status: 400
-                message: "Invalid Order"
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Order'
-        description: order placed for purchasing the pet
+        $ref: '#/components/requestBodies/TokenRequest'
+    summary: List and create tunnels
+  '/v1/tokens/{tokenID}/':
+    parameters:
+      - name: tokenID
+        in: path
+        description: ID of token
         required: true
-  '/store/order/{orderId}':
-    get:
-      tags:
-        - store
-      summary: Find purchase order by ID
-      description: >-
-        For valid response try integer IDs with value <= 5 or > 10. Other values
-        will generated exceptions
-      operationId: getOrderById
-      parameters:
-        - name: orderId
-          in: path
-          description: ID of pet that needs to be fetched
-          required: true
-          schema:
-            type: integer
-            format: int64
-            minimum: 1
-            maximum: 5
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Order'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/Order'
-        '400':
-          description: Invalid ID supplied
-        '404':
-          description: Order not found
-    delete:
-      tags:
-        - store
-      summary: Delete purchase order by ID
-      description: >-
-        For valid response try integer IDs with value < 1000. Anything above
-        1000 or nonintegers will generate API errors
-      operationId: deleteOrder
-      parameters:
-        - name: orderId
-          in: path
-          description: ID of the order that needs to be deleted
-          required: true
-          schema:
-            type: string
-            minimum: 1
-      responses:
-        '400':
-          description: Invalid ID supplied
-        '404':
-          description: Order not found
-  /user:
-    post:
-      tags:
-        - user
-      summary: Create user
-      description: This can only be done by the logged in user.
-      operationId: createUser
-      responses:
-        default:
-          description: successful operation
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/User'
-        description: Created user object
-        required: true
-  '/user/{username}':
-    get:
-      tags:
-        - user
-      summary: Get user by user name
-      description: ''
-      operationId: getUserByName
-      parameters:
-        - name: username
-          in: path
-          description: 'The name that needs to be fetched. Use user1 for testing. '
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/User'
-        '400':
-          description: Invalid username supplied
-        '404':
-          description: User not found
+        schema:
+          type: string
     put:
       tags:
-        - user
-      summary: Updated user
-      description: This can only be done by the logged in user.
-      operationId: updateUser
-      parameters:
-        - name: username
-          in: path
-          description: name that need to be deleted
-          required: true
-          schema:
-            type: string
+        - Tokens
+      summary: Update Token Details
       responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Token'
+              examples:
+                response:
+                  value:
+                    application/json: null
+                    created_at: 1535365683
+                    updated_at: 1536161359
+                    id: cc58c9ea-5fa7-466e-91dc-5c08d0b1127c
+                    description: ''
+                    scopes:
+                      buckets: []
+                      tunnels:
+                        - foo
+                        - bar
+                        - faa
+                    active: true
+                    api_disabled: true
         '400':
-          description: Invalid user supplied
+          description: Bad request (check response message)
         '404':
-          description: User not found
+          description: Tunnel not found
+      requestBody:
+        $ref: '#/components/requestBodies/TokenRequest'
+    delete:
+      tags:
+        - Tokens
+      summary: Delete Token
+      responses:
+        '200':
+          description: Successful Response
+        '404':
+          description: Token not found
+    summary: Update and delete tokens
+  /v1/buckets:
+    get:
+      tags:
+        - Buckets
+      summary: List All Buckets
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Bucket'
+            examples:
+              examples:
+                response:
+                  value:
+                    application/json:
+                      - created_at: 1496610194
+                        updated_at: 1532192772
+                        id: 339ed2e3-70cf-4a81-8db8-e95a9251155d
+                        name: webhook-demo
+                        description: 'auto-created input for http://localhost:8090/webhook'
+                        suspended: false
+                        account_id: bd7e1dfc-54c8-408c-a885-7498bf1d8522
+                        auth:
+                          created_at: -62135596800
+                          updated_at: -62135596800
+                          id: ''
+                          type: none
+                        inputs:
+                          - created_at: 1496610195
+                            updated_at: 1496610195
+                            id: 5e722a5e-f3d9-4eec-9e9f-79f1158e4b10
+                            name: 'ingress for http://localhost:8090/webhook'
+                            bucket_id: 339ed2e3-70cf-4a81-8db8-e95a9251155d
+                            description: >-
+                              auto-created input for
+                              http://localhost:8090/webhook
+                            created_by: ''
+                        outputs:
+                          - created_at: 1496610196
+                            updated_at: 1496610196
+                            id: 3ec1899c-7069-4f55-88c6-5d8f5da4fa30
+                            name: 'http://localhost:8090/webhook'
+                            bucket_id: 339ed2e3-70cf-4a81-8db8-e95a9251155d
+                            destination: 'http://localhost:8090/webhook'
+                            internal: true
+                            description: >-
+                              auto-created output for
+                              http://localhost:8090/webhook
+                            created_by: ''
+    post:
+      tags:
+        - Buckets
+      description: >-
+        You may create your own bucket using this action. It takes a JSON object
+        containing a bucket request. Once bucket is created, it gets  assigned a
+        default input to accept webhooks but you will still have to  create a
+        new output to give it a destination.
+      summary: Create a New Bucket
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bucket'
+        '400':
+          description: Invalid bucket request supplied
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User'
-        description: Updated user object
+              $ref: '#/components/schemas/BucketRequest'
         required: true
-    delete:
-      tags:
-        - user
-      summary: Delete user
-      description: This can only be done by the logged in user.
-      operationId: deleteUser
-      parameters:
-        - name: username
-          in: path
-          description: The name that needs to be deleted
-          required: true
-          schema:
-            type: string
-      responses:
-        '400':
-          description: Invalid username supplied
-        '404':
-          description: User not found
-  /user/createWithArray:
-    post:
-      tags:
-        - user
-      summary: Creates list of users with given input array
-      description: ''
-      operationId: createUsersWithArrayInput
-      responses:
-        default:
-          description: successful operation
-      requestBody:
-        $ref: '#/components/requestBodies/UserArray'
-  /user/createWithList:
-    post:
-      tags:
-        - user
-      summary: Creates list of users with given input array
-      description: ''
-      operationId: createUsersWithListInput
-      responses:
-        default:
-          description: successful operation
-      requestBody:
-        $ref: '#/components/requestBodies/UserArray'
-  /user/login:
+    summary: List and create buckets
+  '/v1/buckets/{bucketID}/':
+    parameters:
+      - name: bucketID
+        in: path
+        description: ID of a bucket to return
+        required: true
+        schema:
+          type: string
     get:
       tags:
-        - user
-      summary: Logs user into the system
-      description: ''
-      operationId: loginUser
-      parameters:
-        - name: username
-          in: query
-          description: The user name for login
-          required: true
-          schema:
-            type: string
-        - name: password
-          in: query
-          description: The password for login in clear text
-          required: true
-          schema:
-            type: string
+        - Buckets
+      summary: Get Bucket Details
       responses:
         '200':
-          description: successful operation
-          headers:
-            X-Rate-Limit:
-              description: calls per hour allowed by the user
-              schema:
-                type: integer
-                format: int32
-            X-Expires-After:
-              description: date in UTC when toekn expires
-              schema:
-                type: string
-                format: date-time
+          description: Successful Response
           content:
             application/json:
               schema:
-                type: string
+                $ref: '#/components/schemas/Bucket'
               examples:
                 response:
-                  value: OK
-            application/xml:
-              schema:
-                type: string
-              examples:
-                response:
-                  value:  <Message> OK </Message>
-            text/plain:
-              examples:
-                response:
-                  value:  OK
-        '400':
-          description: Invalid username/password supplied
-  /user/logout:
-    get:
+                  value:
+                    created_at: 1496610194
+                    updated_at: 1532192772
+                    id: 339ed2e3-70cf-4a81-8db8-e95a9251155d
+                    name: webhook-demo
+                    description: 'auto-created input for http://localhost:8090/webhook'
+                    suspended: false
+                    account_id: bd7e1dfc-54c8-408c-a885-7498bf1d8522
+                    auth:
+                      created_at: -62135596800
+                      updated_at: -62135596800
+                      id: ''
+                      type: none
+                    inputs:
+                      - created_at: 1496610195
+                        updated_at: 1496610195
+                        id: 5e722a5e-f3d9-4eec-9e9f-79f1158e4b10
+                        name: 'ingress for http://localhost:8090/webhook'
+                        bucket_id: 339ed2e3-70cf-4a81-8db8-e95a9251155d
+                        description: 'auto-created input for http://localhost:8090/webhook'
+                        created_by: ''
+                    outputs:
+                      - created_at: 1496610196
+                        updated_at: 1496610196
+                        id: 3ec1899c-7069-4f55-88c6-5d8f5da4fa30
+                        name: 'http://localhost:8090/webhook'
+                        bucket_id: 339ed2e3-70cf-4a81-8db8-e95a9251155d
+                        destination: 'http://localhost:8090/webhook'
+                        internal: true
+                        description: 'auto-created output for http://localhost:8090/webhook'
+                        created_by: ''
+        '404':
+          description: Bucket not found
+    delete:
       tags:
-        - user
-      summary: Logs out current logged in user session
-      description: ''
-      operationId: logoutUser
+        - Buckets
+      summary: Delete Bucket
       responses:
-        default:
-          description: successful operation
+        '200':
+          description: Successful Response
+        '404':
+          description: Bucket not found
+    summary: Get and delete buckets
+  '/v1/buckets/{bucketID}/inputs':
+    parameters:
+      - name: bucketID
+        in: path
+        description: ID of a bucket to create input in
+        required: true
+        schema:
+          type: string
+    post:
+      tags:
+        - Inputs
+      description: Create one or more inputs for the bucket to get unique public endpoints.
+      summary: Create a New Input
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Input'
+        '400':
+          description: Invalid input request supplied
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InputRequest'
+        required: true
+    summary: Manage bucket inputs
+  '/v1/buckets/{bucketID}/inputs/{inputID}':
+    parameters:
+      - name: bucketID
+        in: path
+        description: ID of a bucket to create input in
+        required: true
+        schema:
+          type: string
+      - name: inputID
+        in: path
+        description: ID of an input to delete
+        required: true
+        schema:
+          type: string
+    delete:
+      tags:
+        - Inputs
+      description: >-
+        Delete input. Once input is deleted, you will not be able to recreate a
+        new input with the same ID.
+      summary: Delete Input
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: Input or Bucket not found
+    summary: Manage bucket inputs
+  '/v1/buckets/{bucketID}/outputs':
+    parameters:
+      - name: bucketID
+        in: path
+        description: ID of a bucket to create output in
+        required: true
+        schema:
+          type: string
+    post:
+      tags:
+        - Outputs
+      description: >-
+        Create one or more outputs for the bucket to start forwarding webhooks
+        to those destinations.
+      summary: Create a New Output
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Output'
+        '400':
+          description: Invalid output request supplied
+      requestBody:
+        $ref: '#/components/requestBodies/OutputRequest'
+    summary: Manage bucket outputs
+  '/v1/buckets/{bucketID}/outputs/{outputID}':
+    parameters:
+      - name: bucketID
+        in: path
+        description: ID of a bucket to create input in
+        required: true
+        schema:
+          type: string
+      - name: outputID
+        in: path
+        description: ID of an output to manage
+        required: true
+        schema:
+          type: string
+    put:
+      tags:
+        - Outputs
+      description: Update output destination or make it public/internal.
+      summary: Update Output
+      responses:
+        '200':
+          description: Output updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Output'
+        '400':
+          description: Invalid output request supplied
+      requestBody:
+        $ref: '#/components/requestBodies/OutputRequest'
+    delete:
+      tags:
+        - Outputs
+      summary: Delete Output
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: Output or Bucket not found
+    summary: Manage bucket outputs
+servers:
+  - url: 'https://my.webhookrelay.com/'
 components:
+  requestBodies:
+    OutputRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/OutputRequest'
+      required: true
+    TunnelCreateRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TunnelCreateRequest'
+      required: true
+    TokenRequest:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TokenRequest'
+      required: true
   schemas:
-    ApiResponse:
+    Tunnel:
+      title: Tunnel
       type: object
       properties:
-        code:
+        id:
+          type: string
+        created_at:
           type: integer
-          format: int32
+        updated_at:
+          type: integer
+        destination:
+          type: string
+        name:
+          type: string
+        group:
+          type: string
+        host:
+          type: string
+        protocol:
+          type: string
+        description:
+          type: string
+        auth:
+          type: object
+          $ref: '#/components/schemas/TunnelAuth'
+        crypto:
+          type: string
+      example:
+        created_at: 1534409264
+        updated_at: 1534409264
+        id: b3237483-e96e-4f3a-905c-0d9603d66c1f
+        destination: 'http://localhost:8090'
+        name: tunnel
+        group: ''
+        addr: ''
+        host: tunnelx.webrelay.io
+        mode: active
+        protocol: http
+        account_id: bd7e1dfc-54c8-408c-a885-7498bf1d8522
+        description: ''
+        features: null
+        auth:
+          created_at: 1534409264
+          updated_at: 1534409264
+          id: eb3fbc49-0713-48b1-8971-a7c4a9c64dfb
+          type: none
+        agent_id: ''
+        ingress_rules: null
+        crypto: 'off'
+    TunnelAuth:
+      title: Tunnel Authentication
+      type: object
+      properties:
+        id:
+          type: string
+        created_at:
+          type: integer
+        updated_at:
+          type: integer
         type:
           type: string
-        message:
-          type: string
-    Cat:
-      description: A representation of a cat
-      allOf:
-        - $ref: '#/components/schemas/Pet'
-        - type: object
-          properties:
-            huntingSkill:
-              type: string
-              description: The measured skill for hunting
-              default: lazy
-              enum:
-                - clueless
-                - lazy
-                - adventurous
-                - aggressive
-          required:
-            - huntingSkill
-    Category:
-      type: object
-      properties:
-        id:
-          description: Category ID
-          allOf:
-            - $ref: '#/components/schemas/Id'
-        name:
-          description: Category name
-          type: string
-          minLength: 1
-        sub:
-          description: Test Sub Category
-          type: object
-          properties:
-            prop1:
-              type: string
-              description: Dumb Property
-      xml:
-        name: Category
-    Dog:
-      description: A representation of a dog
-      allOf:
-        - $ref: '#/components/schemas/Pet'
-        - type: object
-          properties:
-            packSize:
-              type: integer
-              format: int32
-              description: The size of the pack the dog is from
-              default: 1
-              minimum: 1
-          required:
-            - packSize
-    HoneyBee:
-      description: A representation of a honey bee
-      allOf:
-        - $ref: '#/components/schemas/Pet'
-        - type: object
-          properties:
-            honeyPerDay:
-              type: number
-              description: Average amount of honey produced per day in ounces
-              example: 3.14
-          required:
-            - honeyPerDay
-    Id:
-      type: integer
-      format: int64
-      readOnly: true
-    Order:
-      type: object
-      properties:
-        id:
-          description: Order ID
-          allOf:
-            - $ref: '#/components/schemas/Id'
-        petId:
-          description: Pet ID
-          allOf:
-            - $ref: '#/components/schemas/Id'
-        quantity:
-          type: integer
-          format: int32
-          minimum: 1
-          default: 1
-        shipDate:
-          description: Estimated ship date
-          type: string
-          format: date-time
-        status:
-          type: string
-          description: Order Status
-          enum:
-            - placed
-            - approved
-            - delivered
-        complete:
-          description: Indicates whenever order was completed or not
-          type: boolean
-          default: false
-          readOnly: true
-        rqeuestId:
-          description: Unique Request Id
-          type: string
-          writeOnly: true
-      xml:
-        name: Order
-    Pet:
-      type: object
-      required:
-        - name
-        - photoUrls
-      discriminator:
-        propertyName: petType
-        mapping:
-          cat: '#/components/schemas/Cat'
-          dog: '#/components/schemas/Dog'
-          bee: '#/components/schemas/HoneyBee'
-      properties:
-        id:
-          externalDocs:
-            description: "Find more info here"
-            url: "https://example.com"
-          description: Pet ID
-          allOf:
-            - $ref: '#/components/schemas/Id'
-        category:
-          description: Categories this pet belongs to
-          allOf:
-            - $ref: '#/components/schemas/Category'
-        name:
-          description: The name given to a pet
-          type: string
-          example: Guru
-        photoUrls:
-          description: The list of URL to a cute photos featuring pet
-          type: array
-          maxItems: 20
-          xml:
-            name: photoUrl
-            wrapped: true
-          items:
-            type: string
-            format: url
-        friend:
-          allOf:
-            - $ref: '#/components/schemas/Pet'
-        tags:
-          description: Tags attached to the pet
-          type: array
-          minItems: 1
-          xml:
-            name: tag
-            wrapped: true
-          items:
-            $ref: '#/components/schemas/Tag'
-        status:
-          type: string
-          description: Pet status in the store
-          enum:
-            - available
-            - pending
-            - sold
-        petType:
-          description: Type of a pet
-          type: string
-      xml:
-        name: Pet
-    Tag:
-      type: object
-      properties:
-        id:
-          description: Tag ID
-          allOf:
-            - $ref: '#/components/schemas/Id'
-        name:
-          description: Tag name
-          type: string
-          minLength: 1
-      xml:
-        name: Tag
-    User:
-      type: object
-      properties:
-        id:
-          $ref: '#/components/schemas/Id'
-        pet:
-          oneOf:
-            - $ref: '#/components/schemas/Pet'
-            - $ref: '#/components/schemas/Tag'
         username:
-          description: User supplied username
           type: string
-          minLength: 4
-          example: John78
-        firstName:
-          description: User first name
-          type: string
-          minLength: 1
-          example: John
-        lastName:
-          description: User last name
-          type: string
-          minLength: 1
-          example: Smith
-        email:
-          description: User email address
-          type: string
-          format: email
-          example: john.smith@example.com
         password:
           type: string
-          description: >-
-            User password, MUST contain a mix of upper and lower case letters,
-            as well as digits
-          format: password
-          minLength: 8
-          pattern: '/(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])/'
-          example: drowssaP123
-        phone:
-          description: User phone number in international format
+        token:
           type: string
-          pattern: '/^\+(?:[0-9]-?){6,14}[0-9]$/'
-          example: +1-202-555-0192
-          nullable: true
-        userStatus:
-          description: User status
+    TunnelCreateRequest:
+      title: Tunnel Create Request
+      type: object
+      properties:
+        name:
+          type: string
+        group:
+          type: string
+        destination:
+          type: string
+        subdomain:
+          type: string
+        host:
+          type: string
+        crypto:
+          type: string
+        auth:
+          type: object
+          $ref: '#/components/schemas/TunnelAuth'
+        description:
+          type: string
+      required:
+        - destination
+      example:
+        name: tunnel-x
+        subdomain: tunnelx
+        destination: 'http://localhost:4000'
+    TunnelUpdateRequest:
+      title: Tunnel Update Request
+      type: object
+      properties:
+        name:
+          type: string
+        destination:
+          type: string
+        crypto:
+          type: string
+        auth:
+          type: object
+          $ref: '#/components/schemas/TunnelAuth'
+        description:
+          type: string
+      example:
+        name: tunnel-x
+        subdomain: tunnelx
+        destination: 'http://localhost:4000'
+    Token:
+      title: Token
+      type: object
+      properties:
+        id:
+          type: string
+        created_at:
           type: integer
-          format: int32
-      xml:
-        name: User
-  requestBodies:
-    Pet:
-      content:
-        application/json:
-          schema:
-            allOf:
-              - description: My Pet
-                title: Pettie
-              - $ref: '#/components/schemas/Pet'
-        application/xml:
-          schema:
-            type: 'object'
-            properties:
-              name:
-                type: string
-                description: hooray
-      description: Pet object that needs to be added to the store
-      required: true
-    UserArray:
-      content:
-        application/json:
-          schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/User'
-      description: List of user object
-      required: true
-  securitySchemes:
-    petstore_auth:
-      description: |
-        Get access to data while protecting your account credentials.
-        OAuth2 is also a safer and more secure way to give you access.
-      type: oauth2
-      flows:
-        implicit:
-          authorizationUrl: 'http://petstore.swagger.io/api/oauth/dialog'
-          scopes:
-            'write:pets': modify pets in your account
-            'read:pets': read your pets
-    api_key:
-      description: >
-        For this sample, you can use the api key `special-key` to test the
-        authorization filters.
-      type: apiKey
-      name: api_key
-      in: header
-  examples:
-    Order:
-      value:
-        quantity: 1,
-        shipDate: 2018-10-19T16:46:45Z,
-        status: placed,
-        complete: false
+        updated_at:
+          type: integer
+        last_login:
+          type: string
+        description:
+          type: string
+        scopes:
+          type: object
+          $ref: '#/components/schemas/TokenScopes'
+        api_access:
+          type: string
+    TokenRequest:
+      title: Token Request
+      type: object
+      properties:
+        description:
+          type: string
+        scopes:
+          type: object
+          $ref: '#/components/schemas/TokenScopes'
+        api_access:
+          type: string
+          description: >-
+            Can be either 'enabled' or 'disabled'. Tokens with disabled API
+            access can only be used to open tunnels or forward webhooks
+    TokenCreateResponse:
+      title: Token Create Response
+      type: object
+      properties:
+        id:
+          type: string
+          description: Token ID is used as a key
+        secret:
+          type: string
+          description: >-
+            This is the only time secret is revealed as it is already encrypted
+            by the system
+        created_at:
+          type: integer
+        updated_at:
+          type: integer
+        last_login:
+          type: string
+        description:
+          type: string
+        scopes:
+          type: object
+          $ref: '#/components/schemas/TokenScopes'
+        api_access:
+          type: string
+    TokenScopes:
+      title: TokenScopes
+      type: object
+      properties:
+        tunnels:
+          type: array
+          items:
+            type: string
+        buckets:
+          type: array
+          items:
+            type: string
+    BucketRequest:
+      title: Bucket create request
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+    Bucket:
+      title: Bucket
+      type: object
+      properties:
+        id:
+          type: string
+        created_at:
+          type: integer
+        updated_at:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        auth:
+          type: object
+          $ref: '#/components/schemas/BucketAuth'
+        inputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/Input'
+        outputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/Output'
+    BucketAuth:
+      title: BucketAuth
+      type: object
+      properties:
+        id:
+          type: string
+        created_at:
+          type: integer
+        updated_at:
+          type: integer
+        type:
+          type: string
+        username:
+          type: string
+        password:
+          type: string
+        token:
+          type: string
+    Input:
+      title: Input
+      type: object
+      properties:
+        id:
+          type: string
+        created_at:
+          type: integer
+        updated_at:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+    InputRequest:
+      title: Input create request
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+    Output:
+      title: Output
+      type: object
+      properties:
+        id:
+          type: string
+        created_at:
+          type: integer
+        updated_at:
+          type: integer
+        name:
+          type: string
+        internal:
+          type: boolean
+        destination:
+          type: string
+        description:
+          type: string
+    OutputRequest:
+      title: Output create request
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        internal:
+          type: boolean
+        destination:
+          type: string
+          description: >-
+            Destination, where to forward the webhook, such as
+            'http://localhost:4000'
