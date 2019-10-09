@@ -1,11 +1,53 @@
 {
   "openapi": "3.0.0",
   "info": {
+    "version": "0.0.1",
     "title": "Effective dates",
-    "description": "Optional multiline or single-line discription here",
-    "version": "0.0.1"
+    "description": "# Introduction\nThis API is documented in **OpenAPI format.** This is a service that provides effective dates based on event dates and reference dates. It is built using Spring boot and Java 11. The service returns a Json with two fields, Date: and Dates: which represents effective date and effective dates.",
+    "contact": {
+      "name": "API Support",
+      "email": "chris@email.com",
+      "url": "https://github.com/cflowerBCBS6/documenation-effectivedates-api"
+    },
+    "x-logo": {
+      "url": "https://redocly.github.io/redoc/petstore-logo.png",
+      "altText": "Petstore logo"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    }
   },
-  "servers": [
+  "tags": [
+    {
+      "name": "GED",
+      "description": "This stands for General Effective date, it just sounds better, this takes in an event date and reference date and returns a \"general\" effective date (meaning no SEP)"
+    },
+    {
+      "name": "LOC",
+      "description": "This stands for Loss of Coverage, this is for the SEP situation, it takes in an event date and reference date and returns a effective date based on that situation."
+    },
+    {
+      "name": "BOA",
+      "description": "This stands for Birth Or Adoption, this is for the SEP situation, it takes in an event date and reference date and returns a list of effective dates based on that situation."
+    },
+    {
+      "name": "O65",
+      "description": "This stands for Over 65, this takes in an event date and reference date and returns a list of effective dates based on the over 65 rule."
+    }
+  ],
+  "x-tagGroups": [
+    {
+      "name": "Effective Dates",
+      "tags": [
+        "General Effective Date",
+        "Loss Of Coverage",
+        "Birth Or Adoption",
+        "Over 65"
+      ]
+    }
+  ],
+  "x-servers": [
     {
       "url": "http://localhost:4200/api/v1",
       "description": "Localhost server dev"
@@ -14,7 +56,10 @@
   "paths": {
     "/u65/ged": {
       "get": {
-        "summary": "Returns an effective date based on eventDate",
+        "tags": [
+          "General Effective Date"
+        ],
+        "summary": "Returns an effective date based on the given event date.",
         "parameters": [
           {
             "name": "eventDate",
@@ -23,7 +68,7 @@
             "description": "Date the event happened",
             "schema": {
               "type": "string",
-              "example": "2019-01-01T00:00:00.000Z"
+              "example": "2019-01-01"
             }
           },
           {
@@ -32,7 +77,7 @@
             "description": "Date when product is purchased OR if left blank then reference date would be current date",
             "schema": {
               "type": "string",
-              "example": "2019-02-02T00:00:00.000Z"
+              "example": "2019-02-02"
             }
           }
         ],
@@ -61,7 +106,10 @@
     },
     "/u65/qle/loc": {
       "get": {
-        "summary": "Returns effective date based on event date, reference date and QLE.",
+        "tags": [
+          "Loss Of Coverage"
+        ],
+        "summary": "Get effective date for LOC",
         "parameters": [
           {
             "name": "eventDate",
@@ -70,7 +118,7 @@
             "description": "Date the event happened",
             "schema": {
               "type": "string",
-              "example": "2019-01-01T00:00:00.000Z"
+              "example": "2019-01-01"
             }
           },
           {
@@ -79,7 +127,7 @@
             "description": "Date when product is purchased OR if left blank then reference date would be current date",
             "schema": {
               "type": "string",
-              "example": "2019-02-02T00:00:00.000Z"
+              "example": "2019-02-02"
             }
           }
         ],
@@ -108,7 +156,10 @@
     },
     "/u65/qle/boa": {
       "get": {
-        "summary": "Returns effective date based on event date, reference date and QLE.",
+        "tags": [
+          "Birth Or Adoption"
+        ],
+        "summary": "Get effective date for BOA",
         "parameters": [
           {
             "name": "eventDate",
@@ -117,7 +168,7 @@
             "description": "Date the event happened",
             "schema": {
               "type": "string",
-              "example": "2019-01-01T00:00:00.000Z"
+              "example": "2019-01-01"
             }
           },
           {
@@ -126,7 +177,7 @@
             "description": "Date when product is purchased OR if left blank then reference date would be current date",
             "schema": {
               "type": "string",
-              "example": "2019-02-02T00:00:00.000Z"
+              "example": "2019-02-02"
             }
           }
         ],
@@ -155,7 +206,10 @@
     },
     "/o65": {
       "get": {
-        "summary": "Returns effective dates based on event date, reference date for over 65",
+        "tags": [
+          "Over 65"
+        ],
+        "summary": "Get effective date for O65",
         "parameters": [
           {
             "name": "eventDate",
@@ -164,7 +218,7 @@
             "description": "Date the event happened",
             "schema": {
               "type": "string",
-              "example": "2019-01-01T00:00:00.000Z"
+              "example": "2019-01-01"
             }
           },
           {
@@ -173,7 +227,7 @@
             "description": "Date when product is purchased OR if left blank then reference date would be current date",
             "schema": {
               "type": "string",
-              "example": "2019-02-02T00:00:00.000Z"
+              "example": "2019-02-02"
             }
           }
         ],
@@ -200,6 +254,9 @@
         }
       }
     }
+  },
+  "x-code-samples": {
+    "lang": "Java"
   },
   "components": {
     "schemas": {
