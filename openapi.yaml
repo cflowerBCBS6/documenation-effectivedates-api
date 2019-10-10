@@ -4,56 +4,61 @@ info:
   title: Effective dates
   description: |-
     # Introduction
-    This API is documented in **OpenAPI format.** This is a service that provides effective dates based on event dates and reference dates. It is built using Spring boot and Java 11. The service returns a Json with two fields, Date: and Dates: which represents effective date and effective dates.
-  contact:
-    name: API Support
-    email: chris@email.com
-    url: 'https://github.com/cflowerBCBS6/documenation-effectivedates-api'
-  x-logo:
-    url: 'https://www.bluecrossnc.com/profiles/bcbs/themes/bcbsnc/logo.png'
-    altText: Blue Cross Logo
-  license:
-    name: Apache 2.0
-    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+    This API takes in multiple params and returns an effective date based on param input.
 tags:
-  - name: GED
-    description: 'This stands for General Effective date, it just sounds better, this takes in an event date and reference date and returns a "general" effective date (meaning no SEP)'
-  - name: LOC
-    description: 'This stands for Loss of Coverage, this is for the SEP situation, it takes in an event date and reference date and returns a effective date based on that situation.'
-  - name: BOA
-    description: 'This stands for Birth Or Adoption, this is for the SEP situation, it takes in an event date and reference date and returns a list of effective dates based on that situation.'
-  - name: O65
-    description: 'This stands for Over 65, this takes in an event date and reference date and returns a list of effective dates based on the over 65 rule.'
+  - name: Med Sup
+    description: Product for over 65
+  - name: Med Adv
+    description: Product for over 65
+  - name: pdp
+    description: Product for over 65
 x-tagGroups:
-  - name: Effective Dates
+  - name: Market Segment
     tags:
-      - General Effective Date
-      - Loss Of Coverage
-      - Birth Or Adoption
+      - Under 65
       - Over 65
 x-servers:
   - url: 'http://localhost:4200/v1'
     description: Localhost server dev
 paths:
-  /u65/ged:
+  /effectivedate:
     get:
       tags:
-        - General Effective Date
-      summary: Returns an effective date based on the given event date.
+        - Under 65
+        - Over 65
+      summary: Effective dates pretaining to the Under 65 market segment and products
       parameters:
         - name: eventDate
           in: query
           required: true
-          description: Date the event happened
+          description: Date of event
           schema:
             type: string
             example: '2019-01-01'
         - name: referenceDate
           in: query
-          description: Date when product is purchased OR if left blank then reference date would be current date
+          description: date when application was either started or product was paid for
           schema:
             type: string
-            example: '2019-02-02'
+            example: '2019-01-01'
+        - name: marketSegment
+          in: query
+          description: The segment of the market that you're interested in getting the effective date in.
+          schema:
+            type: string
+            example: under65
+        - name: situation
+          in: query
+          description: 'situation for a certain rule, ex. loss of coverage'
+          schema:
+            type: string
+            example: loc
+        - name: product
+          in: query
+          description: The name of the product
+          schema:
+            type: string
+            example: medsup
       responses:
         '200':
           description: OK
@@ -67,111 +72,24 @@ paths:
           description: error 404 page not found.
         default:
           description: Unexpected error
-  /u65/qle/loc:
-    get:
-      tags:
-        - Loss Of Coverage
-      summary: Get effective date for LOC
-      parameters:
-        - name: eventDate
-          in: query
-          required: true
-          description: Date the event happened
-          schema:
-            type: string
-            example: '2019-01-01'
-        - name: referenceDate
-          in: query
-          description: Date when product is purchased OR if left blank then reference date would be current date
-          schema:
-            type: string
-            example: '2019-02-02'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EDO'
-        '400':
-          description: The specified date is formatted wrong YYYY-MM-DD
-        '404':
-          description: error 404 page not found.
-        default:
-          description: Unexpected error
-  /u65/qle/boa:
-    get:
-      tags:
-        - Birth Or Adoption
-      summary: Get effective date for BOA
-      parameters:
-        - name: eventDate
-          in: query
-          required: true
-          description: Date the event happened
-          schema:
-            type: string
-            example: '2019-01-01'
-        - name: referenceDate
-          in: query
-          description: Date when product is purchased OR if left blank then reference date would be current date
-          schema:
-            type: string
-            example: '2019-02-02'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EDO'
-        '400':
-          description: The specified date is formatted wrong YYYY-MM-DD
-        '404':
-          description: error 404 page not found.
-        default:
-          description: Unexpected error
-  /o65:
-    get:
-      tags:
-        - Over 65
-      summary: Get effective date for O65
-      parameters:
-        - name: eventDate
-          in: query
-          required: true
-          description: Date the event happened
-          schema:
-            type: string
-            example: '2019-01-01'
-        - name: referenceDate
-          in: query
-          description: Date when product is purchased OR if left blank then reference date would be current date
-          schema:
-            type: string
-            example: '2019-02-02'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/EDO'
-        '400':
-          description: The specified date is formatted wrong YYYY-MM-DD
-        '404':
-          description: error 404 page not found.
-        default:
-          description: Unexpected error
-x-code-samples:
-  lang: Java
 components:
   schemas:
     EDO:
       properties:
-        date:
-          type: string
-        dates:
+        Effective_dates_and_expiration_dates:
           type: object
           example:
-            - string
+            - '2019-01-01'
+            - '2019-01-15'
+        Effective_date:
+          type: string
+          example: '2019-01-01'
+        Market_segment:
+          type: string
+          example: Over 65
+        Situation:
+          type: string
+          example: loc
+        Product:
+          type: string
+          example: Med Sup
