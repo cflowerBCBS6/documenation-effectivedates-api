@@ -13,7 +13,7 @@ info:
     url: 'https://github.com/cflowerBCBS6/documenation-effectivedates-api'
   x-logo:
     url: 'https://www.bluecrossnc.com/profiles/bcbs/themes/bcbsnc/logo.png'
-    altText: Petstore logo
+    altText: Blue Cross Logo
   license:
     name: Apache 2.0
     url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
