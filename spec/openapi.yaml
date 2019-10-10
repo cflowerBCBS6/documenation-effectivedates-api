@@ -89,7 +89,7 @@ components:
     EDO:
       properties:
         Effective_dates_and_expiration_dates:
-          type: array
+          type: object
           example: ['2019-01-01', '2019-01-15']
         Effective_date:
           type: string
