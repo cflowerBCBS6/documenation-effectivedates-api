@@ -6,9 +6,19 @@ info:
     # Introduction
     This API takes in multiple params and returns an effective date based on param input.
     # How-To
-    LOC - means Loss of Coverage BOA - means Birth or Adoption
-    Formatting - All dates that are passed in must be passed in like this (YYYY-MM-DD) for example January 1, 2020 should be passed it like 2020-01-01
-    calling an endpoint and not passing parameters will default in (for Under 65) AEP and (for Over 65) AEP.
+
+
+     **LOC** means Loss of Coverage
+
+
+     **BOA** means Birth or Adoption
+
+
+
+    Formatting - All dates that are passed in **must be** passed in like this (YYYY-MM-DD) for example January 1, 2020 should be passed it like 2020-01-01
+
+
+    Calling an endpoint and not passing parameters will default in (for Under 65) AEP and (for Over 65) AEP.
 tags:
   - name: Help
     description: Get this documentation
