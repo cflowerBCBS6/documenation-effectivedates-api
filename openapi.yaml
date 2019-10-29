@@ -5,7 +5,13 @@ info:
   description: |-
     # Introduction
     This API takes in multiple params and returns an effective date based on param input.
+    # How-To
+    LOC - means Loss of Coverage BOA - means Birth or Adoption
+    Formatting - All dates that are passed in must be passed in like this (YYYY-MM-DD) for example January 1, 2020 should be passed it like 2020-01-01
+    calling an endpoint and not passing parameters will default in (for Under 65) AEP and (for Over 65) AEP.
 tags:
+  - name: Help
+    description: Get this documentation
   - name: Med Sup
     description: Product for over 65 we handle this
   - name: Med Adv
@@ -34,10 +40,26 @@ x-tagGroups:
       - Pdp
       - Vision
       - Dental
+  - name: Help
+    tags:
+      - Help
 x-servers:
   - url: 'http://localhost:4200/api/effectivedates'
     description: Localhost server dev
 paths:
+  /help:
+    get:
+      tags:
+        - Help
+      summary: Retrieve the URL for this page
+      description: This endpoint gets this documentation
+      responses:
+        '200':
+          description: OK
+        '404':
+          description: error 404 page not found.
+        default:
+          description: Unexpected error
   /configure:
     post:
       tags:
@@ -73,8 +95,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/EffectiveDate'
-        '400':
-          description: The specified blank blank blank...
         '404':
           description: error 404 page not found.
         default:
@@ -117,8 +137,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/EffectiveDate'
-        '400':
-          description: The specified blank blank blank...
         '404':
           description: Error 404 page not found.
         '405':
