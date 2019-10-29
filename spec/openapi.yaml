@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  version: '0.0.1'
+  version: '1.0.0'
   title: Effective dates
   description: >-
     # Introduction
@@ -10,56 +10,112 @@ info:
 tags:
   - name: Med Sup
     description: >-
-      Product for over 65
+      Product for over 65 we handle this
   - name: Med Adv
     description: >-
-      Product for over 65
-  - name: pdp
+      Product for over 65 we don't handle this but if we do it will be in this service.
+  - name: Pdp
     description: >-
-      Product for over 65
+      Product for over 65 we don't handle this but if we do it will be available in this service.
+  - name: Medical
+    description: >-
+      Product for under 65
+  - name: Vision
+    description: >-
+      Product used by both over and under 65
+  - name: Dental
+    description: >-
+      Product used by both over and under 65
 
 x-tagGroups:
   - name: Market Segment
     tags:
       - Under 65
       - Over 65
+  - name: Configuration
+    tags:
+      - Configuration
+  - name: Products
+    tags:
+      - Medical
+      - Med Sup
+      - Med Adv
+      - Pdp
+      - Vision
+      - Dental
 
 
 x-servers:
-  - url: http://localhost:4200/v1
+  - url: http://localhost:4200/api/effectivedates
     description: Localhost server dev
 
 
 paths:
-  /effectivedate:
+  /configure:
+    post:
+      tags:
+        - Configuration
+      summary: >-
+        Update configurations
+      description: This endpoint is used to update the configurations of effective dates, it will be used to update the days until expiration (You'd send a String that represents days and it'll use that to calculate expiration dates)
+      responses:
+        '200':
+          description: Successfully Created and set
+
+  /over65:
     get:
       tags:
-      - Under 65
-      - Over 65
-      summary: Effective dates pretaining to the Under 65 market segment and products
+        - Over 65
+      summary: Effective dates for Over 65
+      description: This for now only handles med sup and it returns effective and expiration dates for over 65 products
       parameters:
         - name: eventDate
           in: query
-          required: true
+          description: Date of event or blank for AEP
+          schema:
+            type: string
+            example: '2019-01-01'
+        - name: product
+          in: query
+          description: this will be hidden but if we ever handle other products, this will take in the name of a product and return effective dates and expiration dates based on that product
+          schema:
+            type: string
+            example: 'med sup'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EffectiveDate'
+        '400':
+          description: The specified blank blank blank...
+        '404':
+          description: error 404 page not found.
+        default:
+          description: Unexpected error
+  /under65:
+    get:
+      tags:
+      - Under 65
+      summary: Effective dates for Under 65
+      description: Effective dates pretaining to the Under 65 market segment and products
+      parameters:
+        - name: eventDate
+          in: query
           description: Date of event
           schema:
             type: string
             example: '2019-01-01'
         - name: referenceDate
           in: query
-          description: date when application was either started or product was paid for
+          description: Date when application was either started or product was paid for (Typically that would be "Today")
           schema:
             type: string
             example: '2019-01-01'
-        - name: marketSegment
-          in: query
-          description: The segment of the market that you're interested in getting the effective date in.
-          schema:
-            type: string
-            example: 'under65'
         - name: situation
           in: query
-          description: situation for a certain rule, ex. loss of coverage
+          description: Situation for a certain rule, ex. loss of coverage
           schema:
             type: string
             example: 'loc'
@@ -75,31 +131,41 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/EDO'
+                $ref: '#/components/schemas/EffectiveDate'
         '400':
           description: The specified blank blank blank...
         '404':
-          description: error 404 page not found.
+          description: Error 404 page not found.
+        '405':
+          description: Server is down and/or cannot be reached.
         default:
           description: Unexpected error
 
 
 components:
   schemas:
-    EDO:
+    EffectiveDate:
       properties:
-        Effective_dates_and_expiration_dates:
+        MarketSegment:
+          type: string
+          example: 'Under 65'
+        EffectiveDatesAndExpirationDate:
           type: object
-          example: ['2019-01-01', '2019-01-15']
-        Effective_date:
-          type: string
-          example: '2019-01-01'
-        Market_segment:
-          type: string
-          example: 'Over 65'
+          example: [{'effectiveDate':'2019-01-01', 'expirationDate':'2019-01-15'}, {'effectiveDate':'2019-01-15', 'expirationDate':'2019-02-01'}]
         Situation:
           type: string
-          example: 'loc'
+          example: 'Loss of Coverage'
         Product:
           type: string
-          example: 'Med Sup'
+          example: 'Medical'
+        ReferenceDate:
+          type: string
+          example: '2019-02-02'
+        EventDate:
+          type: string
+          example: '2019-01-15'
+    Configuration:
+      properties:
+        expirationDate:
+          type: string
+          example: '45'

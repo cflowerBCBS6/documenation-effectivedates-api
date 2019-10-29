@@ -22,3 +22,10 @@ paths:
             Rate-Limit-Limit:
               $ref: "#/headers/Rate-Limit-Limit"
 ```
+Close Chrome
+Search for “regedit” in Start menu
+Right click on regedit.exe and click “Run as administrator”
+Go to HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Google
+
+Remove the entire “Chrome” container
+Open Chrome and try to install the extension
